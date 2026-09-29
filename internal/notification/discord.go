@@ -1,6 +1,9 @@
 package notification
 
 import (
+	"strconv"
+	"strings"
+
 	"jetspotter/internal/configuration"
 	"jetspotter/internal/jetspotter"
 
@@ -82,7 +85,7 @@ func getColorByAltitude(altitude int) int {
 }
 
 func buildDiscordMessage(aircraft []jetspotter.Aircraft, config configuration.Config) (message discordgo.Message, err error) {
-	message.Content = ":airplane: A jet has been spotted! :airplane:"
+	message.Content = formatDiscordContent(config.DiscordMessage, aircraft)
 	var embeds []*discordgo.MessageEmbed
 	for _, ac := range aircraft {
 		embed := &discordgo.MessageEmbed{
@@ -183,4 +186,33 @@ func buildDiscordMessage(aircraft []jetspotter.Aircraft, config configuration.Co
 
 	message.Embeds = embeds
 	return message, nil
+}
+
+// discordMaxContentLength is the maximum length of the text of a Discord message.
+const discordMaxContentLength = 2000
+
+// formatDiscordContent replaces the placeholders {count}, {registrations} and {callsigns}
+// in the custom message and makes sure the result fits in a Discord message.
+func formatDiscordContent(template string, aircraft []jetspotter.Aircraft) string {
+	var registrations, callsigns []string
+	for _, ac := range aircraft {
+		if ac.Registration != "" {
+			registrations = append(registrations, ac.Registration)
+		}
+		if ac.Callsign != "" {
+			callsigns = append(callsigns, ac.Callsign)
+		}
+	}
+
+	content := strings.NewReplacer(
+		"{count}", strconv.Itoa(len(aircraft)),
+		"{registrations}", strings.Join(registrations, ", "),
+		"{callsigns}", strings.Join(callsigns, ", "),
+	).Replace(template)
+
+	if runes := []rune(content); len(runes) > discordMaxContentLength {
+		content = string(runes[:discordMaxContentLength])
+	}
+
+	return content
 }

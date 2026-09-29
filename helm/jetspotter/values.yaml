@@ -92,6 +92,9 @@ discord:
   webhook: ""
   # Discord notifications use an embed color based on the alitute of the aircraft.
   colorAltitude: "true"
+  # Custom text displayed above the aircraft in Discord notifications.
+  # Placeholders: {count}, {registrations}, {callsigns}. Set to "" to only send the aircraft embeds.
+  message: ":airplane: A jet has been spotted! :airplane:"
 
 gotify:
   # URL to send gotify notification to

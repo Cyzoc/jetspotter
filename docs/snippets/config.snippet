@@ -53,6 +53,15 @@ type Config struct {
 	// DISCORD_COLOR_ALTITUDE "true"
 	DiscordColorAltitude string
 
+	// Custom text that is displayed above the aircraft in Discord notifications.
+	// Discord markdown, emojis and mentions (for example <@&ROLE_ID>) are supported.
+	// The placeholders {count}, {registrations} and {callsigns} are replaced by the values of the aircraft in the message.
+	// If set to an empty string, only the aircraft embeds are sent. Discord limits this text to 2000 characters.
+	// DISCORD_MESSAGE ":airplane: A jet has been spotted! :airplane:"
+	// EXAMPLE
+	// DISCORD_MESSAGE ":police_car: Police aircraft nearby: {registrations}"
+	DiscordMessage string
+
 	// Interval in seconds between fetching aircraft, minimum is 60 due to API rate limiting.
 	// FETCH_INTERVAL 60
 	FetchInterval int

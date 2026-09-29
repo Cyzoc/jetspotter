@@ -15,6 +15,7 @@ data:
   REGISTRATIONS: {{ .Values.jetspotter.registrations | default (list "ALL") | join "," | quote }}
   MAX_AIRCRAFT_SLACK_MESSAGE: {{ .Values.slack.maxAircraftPerMessage | quote }}
   DISCORD_COLOR_ALTITUDE: {{ .Values.discord.colorAltitude | quote }}
+  DISCORD_MESSAGE: {{ .Values.discord.message | quote }}
   GOTIFY_URL: {{ .Values.gotify.url }}
   METRICS_PORT: {{ .Values.metrics.port | quote }}
   NTFY_SERVER: {{ .Values.ntfy.server }}

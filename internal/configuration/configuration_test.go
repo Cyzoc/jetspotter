@@ -8,17 +8,13 @@ import (
 // TestScanRangeDefaultsToMaxRangeKilometers tests that MaxScanRangeKilometers defaults to MaxRangeKilometers
 // when MAX_SCAN_RANGE_KILOMETERS is not set
 func TestScanRangeDefaultsToMaxRangeKilometers(t *testing.T) {
-	// Save current environment
-	oldMaxRange := os.Getenv("MAX_RANGE_KILOMETERS")
-	oldMaxScanRange := os.Getenv("MAX_SCAN_RANGE_KILOMETERS")
-	defer func() {
-		os.Setenv("MAX_RANGE_KILOMETERS", oldMaxRange)
-		os.Setenv("MAX_SCAN_RANGE_KILOMETERS", oldMaxScanRange)
-	}()
+	// t.Setenv restores the original environment when the test finishes
+	t.Setenv("MAX_RANGE_KILOMETERS", "")
+	t.Setenv("MAX_SCAN_RANGE_KILOMETERS", "")
 
 	// Set MAX_RANGE_KILOMETERS, but not MAX_SCAN_RANGE_KILOMETERS
-	os.Setenv("MAX_RANGE_KILOMETERS", "50")
-	os.Unsetenv("MAX_SCAN_RANGE_KILOMETERS")
+	t.Setenv("MAX_RANGE_KILOMETERS", "50")
+	t.Setenv("MAX_SCAN_RANGE_KILOMETERS", "")
 
 	config, err := GetConfig()
 	if err != nil {
@@ -38,17 +34,13 @@ func TestScanRangeDefaultsToMaxRangeKilometers(t *testing.T) {
 // TestScanRangeCanBeDifferentFromMaxRange tests that MaxScanRangeKilometers can be set to a different
 // value than MaxRangeKilometers
 func TestScanRangeCanBeDifferentFromMaxRange(t *testing.T) {
-	// Save current environment
-	oldMaxRange := os.Getenv("MAX_RANGE_KILOMETERS")
-	oldMaxScanRange := os.Getenv("MAX_SCAN_RANGE_KILOMETERS")
-	defer func() {
-		os.Setenv("MAX_RANGE_KILOMETERS", oldMaxRange)
-		os.Setenv("MAX_SCAN_RANGE_KILOMETERS", oldMaxScanRange)
-	}()
+	// t.Setenv restores the original environment when the test finishes
+	t.Setenv("MAX_RANGE_KILOMETERS", "")
+	t.Setenv("MAX_SCAN_RANGE_KILOMETERS", "")
 
 	// Set both environment variables to different values
-	os.Setenv("MAX_RANGE_KILOMETERS", "30")
-	os.Setenv("MAX_SCAN_RANGE_KILOMETERS", "100")
+	t.Setenv("MAX_RANGE_KILOMETERS", "30")
+	t.Setenv("MAX_SCAN_RANGE_KILOMETERS", "100")
 
 	config, err := GetConfig()
 	if err != nil {
@@ -64,16 +56,17 @@ func TestScanRangeCanBeDifferentFromMaxRange(t *testing.T) {
 	}
 }
 
+// setValidBaseEnv makes sure the required numeric settings are valid, and restores them after the test.
+func setValidBaseEnv(t *testing.T) {
+	t.Helper()
+	t.Setenv("MAX_RANGE_KILOMETERS", "30")
+	t.Setenv("MAX_SCAN_RANGE_KILOMETERS", "")
+}
+
 func TestRegistrationsDefaultsToAll(t *testing.T) {
-	old, wasSet := os.LookupEnv("REGISTRATIONS")
-	defer func() {
-		if wasSet {
-			os.Setenv("REGISTRATIONS", old)
-		} else {
-			os.Unsetenv("REGISTRATIONS")
-		}
-	}()
-	os.Unsetenv("REGISTRATIONS")
+	setValidBaseEnv(t)
+	t.Setenv("REGISTRATIONS", "")
+	os.Unsetenv("REGISTRATIONS") // t.Setenv restores the original value afterwards
 
 	config, err := GetConfig()
 	if err != nil {
@@ -86,15 +79,8 @@ func TestRegistrationsDefaultsToAll(t *testing.T) {
 }
 
 func TestRegistrationsAreParsed(t *testing.T) {
-	old, wasSet := os.LookupEnv("REGISTRATIONS")
-	defer func() {
-		if wasSet {
-			os.Setenv("REGISTRATIONS", old)
-		} else {
-			os.Unsetenv("REGISTRATIONS")
-		}
-	}()
-	os.Setenv("REGISTRATIONS", " oo-abc, n12345 ,,fa-* ")
+	setValidBaseEnv(t)
+	t.Setenv("REGISTRATIONS", " oo-abc, n12345 ,,fa-* ")
 
 	config, err := GetConfig()
 	if err != nil {
@@ -109,5 +95,28 @@ func TestRegistrationsAreParsed(t *testing.T) {
 		if config.Registrations[i] != expected[i] {
 			t.Fatalf("expected %v, got %v", expected, config.Registrations)
 		}
+	}
+}
+
+func TestDiscordMessageDefaultAndCustom(t *testing.T) {
+	setValidBaseEnv(t)
+	t.Setenv("DISCORD_MESSAGE", "")
+	os.Unsetenv("DISCORD_MESSAGE") // t.Setenv restores the original value afterwards
+
+	config, err := GetConfig()
+	if err != nil {
+		t.Fatalf("Failed to get config: %v", err)
+	}
+	if config.DiscordMessage != ":airplane: A jet has been spotted! :airplane:" {
+		t.Fatalf("unexpected default: %q", config.DiscordMessage)
+	}
+
+	t.Setenv("DISCORD_MESSAGE", "Police nearby: {registrations}")
+	config, err = GetConfig()
+	if err != nil {
+		t.Fatalf("Failed to get config: %v", err)
+	}
+	if config.DiscordMessage != "Police nearby: {registrations}" {
+		t.Fatalf("unexpected message: %q", config.DiscordMessage)
 	}
 }

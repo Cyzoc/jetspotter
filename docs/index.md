@@ -23,6 +23,7 @@ Documentation how to set up notifications using incoming webhooks can be found i
 ### Discord
 
 [Discord](https://discord.com/) notifications are sent if the `DISCORD_WEBHOOK_URL` environment variable is defined.
+The text above the aircraft can be customized with `DISCORD_MESSAGE`. The placeholders `{count}`, `{registrations}` and `{callsigns}` are replaced with the aircraft in the message, and mentions such as `<@&ROLE_ID>` are supported. Set it to an empty string to only send the aircraft embeds.
 Documentation how to set up notifications using incoming webhooks can be found in the [official discord documentation](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks).
 
 By default the color of the embed message is related to the altitude of the aircraft. The color scheme is the same as on the [airplanes map](https://globe.airplanes.live/). This feature can be disabled in the [configuration](configuration.md) to use the same static color for every embed message.

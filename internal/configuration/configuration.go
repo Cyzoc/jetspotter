@@ -68,6 +68,15 @@ type Config struct {
 	// DISCORD_COLOR_ALTITUDE "true"
 	DiscordColorAltitude string
 
+	// Custom text that is displayed above the aircraft in Discord notifications.
+	// Discord markdown, emojis and mentions (for example <@&ROLE_ID>) are supported.
+	// The placeholders {count}, {registrations} and {callsigns} are replaced by the values of the aircraft in the message.
+	// If set to an empty string, only the aircraft embeds are sent. Discord limits this text to 2000 characters.
+	// DISCORD_MESSAGE ":airplane: A jet has been spotted! :airplane:"
+	// EXAMPLE
+	// DISCORD_MESSAGE ":police_car: Police aircraft nearby: {registrations}"
+	DiscordMessage string
+
 	// Interval in seconds between fetching aircraft, minimum is 60 due to API rate limiting.
 	// FETCH_INTERVAL 60
 	FetchInterval int
@@ -114,6 +123,7 @@ const (
 	SlackWebhookURL        = "SLACK_WEBHOOK_URL"
 	DiscordWebhookURL      = "DISCORD_WEBHOOK_URL"
 	DiscordColorAltitude   = "DISCORD_COLOR_ALTITUDE"
+	DiscordMessage         = "DISCORD_MESSAGE"
 	LocationLatitude       = "LOCATION_LATITUDE"
 	LocationLongitude      = "LOCATION_LONGITUDE"
 	MaxRangeKilometers     = "MAX_RANGE_KILOMETERS"
@@ -154,6 +164,7 @@ func GetConfig() (config Config, err error) {
 	config.SlackWebHookURL = getEnvVariable(SlackWebhookURL, "")
 	config.DiscordWebHookURL = getEnvVariable(DiscordWebhookURL, "")
 	config.DiscordColorAltitude = getEnvVariable(DiscordColorAltitude, "true")
+	config.DiscordMessage = getEnvVariable(DiscordMessage, ":airplane: A jet has been spotted! :airplane:")
 	config.MetricsPort = getEnvVariable(MetricsPort, "7070")
 	config.APIPort = getEnvVariable(APIPort, "8085")
 	config.WebUIPort = getEnvVariable(WebUIPort, "8080")

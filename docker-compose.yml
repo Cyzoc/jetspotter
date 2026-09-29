@@ -1,0 +1,41 @@
+services:
+  jetspotter:
+    # Build from source so the REGISTRATIONS filter is included.
+    # The published ghcr.io/vvanouytsel/jetspotter image does not have it.
+    build: .
+    container_name: jetspotter
+    restart: unless-stopped
+    ports:
+      - "8080:8080"   # Web UI
+      # - "7070:7070" # Prometheus metrics
+    environment:
+      # Melbourne Airport (YMML)
+      LOCATION_LATITUDE: "-37.6733"
+      LOCATION_LONGITUDE: "144.8431"
+
+      # Notify for aircraft within 150 km, scan the same area
+      MAX_RANGE_KILOMETERS: "150"
+      MAX_SCAN_RANGE_KILOMETERS: "150"
+      FETCH_INTERVAL: "60"
+
+      # Victoria Police Air Wing
+      #   VH-PVE  Beechcraft King Air 350ER  (POL35)
+      #   VH-PVO  Leonardo AW139             (POL30)
+      #   VH-PVQ  Leonardo AW139
+      #   VH-PVR  Leonardo AW139             (POL32)
+      REGISTRATIONS: "VH-PVE,VH-PVO,VH-PVQ,VH-PVR"
+      AIRCRAFT_TYPES: "ALL"
+      MAX_ALTITUDE_FEET: "0"
+
+      # Web UI login (change this!)
+      AUTH_PASSWORD: "jetspotter"
+
+      # Notifications (uncomment what you use)
+      # DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/XXX/YYY"
+      # Custom text above the aircraft. Placeholders: {count}, {registrations}, {callsigns}
+      # DISCORD_MESSAGE: ":police_car: Victoria Police Air Wing spotted: {registrations}"
+      # SLACK_WEBHOOK_URL: "https://hooks.slack.com/services/XXX/YYY/ZZZ"
+      # NTFY_TOPIC: "my-jetspotter"
+      # NTFY_SERVER: "https://ntfy.sh"
+      # GOTIFY_URL: "http://my-gotify-server:85"
+      # GOTIFY_TOKEN: "XXXX"
