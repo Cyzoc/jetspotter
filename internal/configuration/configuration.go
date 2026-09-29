@@ -45,6 +45,17 @@ type Config struct {
 	// AIRCRAFT_TYPES MILITARY
 	AircraftTypes []string
 
+	// A comma seperated list of registrations (tail numbers) that you want to spot.
+	// If not set, 'ALL' will be used, which will disable the filter.
+	// Matching is case-insensitive and ignores hyphens, so 'OO-ABC' and 'ooabc' are equivalent.
+	// A trailing '*' can be used as a wildcard to match a prefix, for example 'FA-*' matches FA-101, FA-102, ...
+	// This filter is combined with AIRCRAFT_TYPES, an aircraft must match both filters to be spotted.
+	// REGISTRATIONS ALL
+	// EXAMPLES
+	// REGISTRATIONS OO-ABC,N12345
+	// REGISTRATIONS FA-*
+	Registrations []string
+
 	// Webhook used to send notifications to Slack. If not set, no messages will be sent to Slack.
 	// SLACK_WEBHOOK_URL ""
 	SlackWebHookURL string
@@ -109,6 +120,7 @@ const (
 	MaxScanRangeKilometers = "MAX_SCAN_RANGE_KILOMETERS"
 	MaxAltitudeFeet        = "MAX_ALTITUDE_FEET"
 	AircraftTypes          = "AIRCRAFT_TYPES"
+	Registrations          = "REGISTRATIONS"
 	FetchInterval          = "FETCH_INTERVAL"
 	GotifyURL              = "GOTIFY_URL"
 	NtfyTopic              = "NTFY_TOPIC"
@@ -191,5 +203,24 @@ func GetConfig() (config Config, err error) {
 	}
 
 	config.AircraftTypes = strings.Split(strings.ToUpper(strings.ReplaceAll(getEnvVariable(AircraftTypes, "ALL"), " ", "")), ",")
+	config.Registrations = parseList(getEnvVariable(Registrations, "ALL"), "ALL")
 	return config, nil
+}
+
+// parseList converts a comma separated string into an upper-cased list without whitespace or empty entries.
+// If the result is empty, a list containing only the fallback is returned.
+func parseList(value, fallback string) []string {
+	var list []string
+	for _, item := range strings.Split(strings.ToUpper(value), ",") {
+		item = strings.ReplaceAll(strings.TrimSpace(item), " ", "")
+		if item != "" {
+			list = append(list, item)
+		}
+	}
+
+	if len(list) == 0 {
+		return []string{fallback}
+	}
+
+	return list
 }

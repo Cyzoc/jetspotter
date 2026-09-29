@@ -136,6 +136,15 @@ function displayConfigData(config) {
         typesElement.textContent = aircraftTypes.join(', ');
     }
     
+    // Registrations
+    const registrations = config.Registrations || [];
+    const registrationsElement = document.getElementById('registrations-value');
+    if (registrations.length === 0 || registrations.includes('ALL')) {
+        registrationsElement.textContent = 'All registrations';
+    } else {
+        registrationsElement.textContent = registrations.join(', ');
+    }
+
     // Notification services
     configureNotificationCard('discord', config.DiscordWebHookURL);
     configureNotificationCard('slack', config.SlackWebHookURL);

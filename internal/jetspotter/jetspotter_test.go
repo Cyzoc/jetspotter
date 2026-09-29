@@ -1044,3 +1044,41 @@ func TestGetAllAircraftRawInRangeQueriesLatLonDistPath(t *testing.T) {
 		t.Fatalf("expected one aircraft with ICAO '4ca770', got %+v", aircraft)
 	}
 }
+
+func TestFilterAircraftByRegistrations(t *testing.T) {
+	aircraftList := []Aircraft{
+		{Callsign: "A", Registration: "OO-ABC"},
+		{Callsign: "B", Registration: "N12345"},
+		{Callsign: "C", Registration: "FA-101"},
+		{Callsign: "D", Registration: "FA-102"},
+	}
+
+	tests := []struct {
+		name          string
+		registrations []string
+		expected      []string
+	}{
+		{"nil disables the filter", nil, []string{"A", "B", "C", "D"}},
+		{"ALL disables the filter", []string{"ALL"}, []string{"A", "B", "C", "D"}},
+		{"exact match", []string{"OO-ABC"}, []string{"A"}},
+		{"case and hyphen insensitive", []string{"ooabc"}, []string{"A"}},
+		{"multiple registrations", []string{"OO-ABC", "N12345"}, []string{"A", "B"}},
+		{"prefix wildcard", []string{"FA-*"}, []string{"C", "D"}},
+		{"wildcard without hyphen", []string{"FA*"}, []string{"C", "D"}},
+		{"no match", []string{"XX-XXX"}, nil},
+		{"aircraft matching multiple patterns is returned once", []string{"FA-101", "FA-*"}, []string{"C", "D"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var actual []string
+			for _, ac := range filterAircraftByRegistrations(aircraftList, tt.registrations) {
+				actual = append(actual, ac.Callsign)
+			}
+
+			if !reflect.DeepEqual(tt.expected, actual) {
+				t.Fatalf("expected %v, got %v", tt.expected, actual)
+			}
+		})
+	}
+}

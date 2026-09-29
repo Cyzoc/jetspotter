@@ -153,6 +153,16 @@ docker run -e LOCATION_LATITUDE=51.1697898378895 -e LOCATION_LONGITUDE=5.4701143
 LOCATION_LATITUDE=51.1697898378895 LOCATION_LONGITUDE=5.470114381971933 AIRCRAFT_TYPES=MILITARY,A320 MAX_RANGE_KILOMETERS=30 ./jetspotter
 ```
 
+Only show aircraft with the registrations `OO-ABC` or `N12345`, or any registration starting with `FA-`, within 30 kilometers of Kleine-Brogel airbase.
+
+```bash
+# Docker
+docker run -e LOCATION_LATITUDE=51.1697898378895 -e LOCATION_LONGITUDE=5.470114381971933 -e REGISTRATIONS="OO-ABC,N12345,FA-*" -e MAX_RANGE_KILOMETERS=30 ghcr.io/vvanouytsel/jetspotter:latest
+
+# Binary
+LOCATION_LATITUDE=51.1697898378895 LOCATION_LONGITUDE=5.470114381971933 REGISTRATIONS="OO-ABC,N12345,FA-*" MAX_RANGE_KILOMETERS=30 ./jetspotter
+```
+
 Send a slack notification if one or more aircraft are spotted
 
 ```bash

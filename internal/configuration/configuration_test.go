@@ -63,3 +63,51 @@ func TestScanRangeCanBeDifferentFromMaxRange(t *testing.T) {
 		t.Fatalf("expected MaxScanRangeKilometers to be 100, got %d", config.MaxScanRangeKilometers)
 	}
 }
+
+func TestRegistrationsDefaultsToAll(t *testing.T) {
+	old, wasSet := os.LookupEnv("REGISTRATIONS")
+	defer func() {
+		if wasSet {
+			os.Setenv("REGISTRATIONS", old)
+		} else {
+			os.Unsetenv("REGISTRATIONS")
+		}
+	}()
+	os.Unsetenv("REGISTRATIONS")
+
+	config, err := GetConfig()
+	if err != nil {
+		t.Fatalf("Failed to get config: %v", err)
+	}
+
+	if len(config.Registrations) != 1 || config.Registrations[0] != "ALL" {
+		t.Fatalf("expected Registrations to be [ALL], got %v", config.Registrations)
+	}
+}
+
+func TestRegistrationsAreParsed(t *testing.T) {
+	old, wasSet := os.LookupEnv("REGISTRATIONS")
+	defer func() {
+		if wasSet {
+			os.Setenv("REGISTRATIONS", old)
+		} else {
+			os.Unsetenv("REGISTRATIONS")
+		}
+	}()
+	os.Setenv("REGISTRATIONS", " oo-abc, n12345 ,,fa-* ")
+
+	config, err := GetConfig()
+	if err != nil {
+		t.Fatalf("Failed to get config: %v", err)
+	}
+
+	expected := []string{"OO-ABC", "N12345", "FA-*"}
+	if len(config.Registrations) != len(expected) {
+		t.Fatalf("expected %v, got %v", expected, config.Registrations)
+	}
+	for i := range expected {
+		if config.Registrations[i] != expected[i] {
+			t.Fatalf("expected %v, got %v", expected, config.Registrations)
+		}
+	}
+}

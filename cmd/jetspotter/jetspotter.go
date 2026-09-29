@@ -97,6 +97,10 @@ func HandleJetspotter(config configuration.Config) {
 			config.MaxRangeKilometers, config.AircraftTypes)
 	}
 
+	if !(len(config.Registrations) == 0 || (len(config.Registrations) == 1 && config.Registrations[0] == "ALL")) {
+		log.Printf("Only showing aircraft with the following registrations: %s", config.Registrations)
+	}
+
 	if config.MaxAltitudeFeet > 0 {
 		log.Printf("Only showing aircraft at or below %d feet.", config.MaxAltitudeFeet)
 	}

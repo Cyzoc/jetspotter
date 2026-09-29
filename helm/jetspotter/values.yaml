@@ -18,6 +18,14 @@ jetspotter:
     - ALL
     # - F16
     # - A400
+  # A list of registrations (tail numbers) that you want to spot.
+  # If not set, 'ALL' will be used, which will disable the filter.
+  # Matching ignores case and hyphens. A trailing '*' matches a prefix, e.g. 'FA-*'.
+  # Combined with aircraftTypes: an aircraft must match both filters.
+  registrations:
+    - ALL
+    # - OO-ABC
+    # - FA-*
 
 # Web UI configuration
 webUI:

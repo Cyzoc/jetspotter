@@ -259,6 +259,9 @@ func HandleAircraft(alreadySpottedAircraft *[]Aircraft, config configuration.Con
 	// Only filter by types for notifications, not for the full output
 	filteredForNotifications := filterAircraftByTypes(newlySpottedAircraft, config.AircraftTypes)
 
+	// Apply registration filter if configured
+	filteredForNotifications = filterAircraftByRegistrations(filteredForNotifications, config.Registrations)
+
 	// Apply altitude filter if configured
 	if config.MaxAltitudeFeet > 0 {
 		filteredForNotifications = filterAircraftByAltitude(filteredForNotifications, config.MaxAltitudeFeet)
@@ -305,6 +308,49 @@ func filterAircraftByTypes(aircraft []Aircraft, types []string) []Aircraft {
 		for _, aircraftType := range types {
 			if isAircraftDesired(ac, aircraftType) {
 				filteredAircraft = append(filteredAircraft, ac)
+			}
+		}
+	}
+
+	return filteredAircraft
+}
+
+// normalizeRegistration upper-cases a registration and removes hyphens and whitespace,
+// so that 'oo-abc', 'OO-ABC' and 'OOABC' are all considered equal.
+func normalizeRegistration(registration string) string {
+	registration = strings.ToUpper(strings.TrimSpace(registration))
+	registration = strings.ReplaceAll(registration, "-", "")
+	return strings.ReplaceAll(registration, " ", "")
+}
+
+// isRegistrationDesired returns true if the registration matches the pattern.
+// The pattern 'ALL' matches everything, a trailing '*' matches any registration with that prefix.
+func isRegistrationDesired(registration, pattern string) bool {
+	if strings.EqualFold(strings.TrimSpace(pattern), "ALL") {
+		return true
+	}
+
+	registration = normalizeRegistration(registration)
+	if strings.HasSuffix(pattern, "*") {
+		return strings.HasPrefix(registration, normalizeRegistration(strings.TrimSuffix(pattern, "*")))
+	}
+
+	return registration == normalizeRegistration(pattern)
+}
+
+// filterAircraftByRegistrations returns a list of Aircraft that match at least one of the registrations.
+// An empty list or a list containing 'ALL' disables the filter.
+func filterAircraftByRegistrations(aircraft []Aircraft, registrations []string) []Aircraft {
+	if len(registrations) == 0 {
+		return aircraft
+	}
+
+	var filteredAircraft []Aircraft
+	for _, ac := range aircraft {
+		for _, registration := range registrations {
+			if isRegistrationDesired(ac.Registration, registration) {
+				filteredAircraft = append(filteredAircraft, ac)
+				break
 			}
 		}
 	}
